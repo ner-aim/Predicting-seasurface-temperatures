@@ -1,0 +1,276 @@
+---
+title: "MiniProject1"
+output: html_document
+---
+
+```{r, echo=FALSE}
+library(bsts)
+library(bpa)
+```
+
+The SST data set describes monthly sea temperature sampled every 10 meters from 10 to 90 meters. It has **158 records** ranging from **January 2004 to April 2018**.
+
+Data pattern/grouping? (bpa package)
+
+### Sea Surface Temperature Dataset
+Import the dataset from github
+Convert the string date into a date type 
+Realign the columns so the time features come first then the various depth lengths
+training and test sets: 126 : 32
+```{r, echo=FALSE}
+sea <- read.csv("https://github.com/asbates/bayes-time-series/raw/master/data/gilbralter_time_series_r_2.csv", header=TRUE)
+sea$startDate <- as.Date(sea$startDate)
+sea <- sea[, c(1, 3, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12)]
+
+new_names <- c("time_index", "date", "SST", "10m", "20m", "30m", "40m", "50m", "60m", "70m", "80m", "90m")
+
+names(sea) <- new_names
+
+head(sea, n=6)
+
+train = sea[1:126, ] ; test = sea[127: 158, ]
+
+```
+
+
+```{r}
+
+names(sea)[1:length(sea)]
+```
+
+Insights 
+```{r, echo=FALSE}
+#print(paste("rows: ", nrow(sea), "columns: ", ncol(sea)))
+
+#print(min(sea$startDate)) ; print(max(sea$startDate))
+
+```
+
+Insights 
+### Density Plots 
+Here are density plots for surface levels 10-90
+```{r, echo=FALSE}
+# density plots of the sea depths 0 meters - 90 meters
+par(mfrow=c(3, 2))
+#par(mfrow=c(4, 3))
+
+
+#x0 <- sea$`10m`
+#hist(x0, main = "Surface Level Sea Temperature", xlab="Temperature", breaks=20, prob=TRUE)
+#lines(density(x0))
+#abline(v=mean(x0), col="blue", lwd=2)
+
+
+x10 <- sea$`10m`
+hist(x10, main = "Sea Temperature at 10 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x10))
+abline(v=mean(x10), col="blue", lwd=2)
+
+
+x20 <- sea$`20m`
+hist(x20, main = "Sea Temperature at 20 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x20))
+abline(v=mean(x20), col="blue", lwd=2)
+
+
+x30 <- sea$`30m`
+hist(x30, main = "Sea Temperature at 30 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x30))
+abline(v=mean(x30), col="blue", lwd=2)
+
+
+x40 <- sea$`40m`
+hist(x40, main = "Sea Temperature at 40 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x40))
+abline(v=mean(x40), col="blue", lwd=2)
+
+
+x50 <- sea$`50m`
+hist(x50, main = "Sea Temperature at 50 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x50))
+abline(v=mean(x50), col="blue", lwd=2)
+
+par(mfrow=c(3, 2))
+
+x60 <- sea$`60m`
+hist(x60, main = "Sea Temperature at 60 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x60))
+abline(v=mean(x60), col="blue", lwd=2)
+
+
+x70 <- sea$`70m`
+hist(x70, main = "Sea Temperature at 70 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x70))
+abline(v=mean(x70), col="blue", lwd=2)
+
+
+x80 <- sea$`80m`
+hist(x80, main = "Sea Temperature at 80 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x80))
+abline(v=mean(x80), col="blue", lwd=2)
+
+
+x90 <- sea$`90m`
+hist(x90, main = "Sea Temperature at 90 Meters", xlab="Temperature", breaks=20, prob=TRUE)
+lines(density(x90))
+abline(v=mean(x90), col="blue", lwd=2)
+```
+
+Insights
+### Line Graphs x0-x90
+
+We see strong seasonality across all depths but overall temperatures are lower the deeper the depth
+
+```{r, echo=FALSE}
+par(mfrow=c(3, 2))
+
+#plot(sea$startDate, sea$X0, main ="Sea Temperature: Surface Level", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1) 
+
+#plot(sea$startDate, sea$X0, main ="Sea Temperature: Surface Level", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1) 
+
+plot(sea$date, sea$`10m` , main ="Sea Temperature: 10 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`20m`, main ="Sea Temperature: 20 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`30m`, main ="Sea Temperature: 30 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`40m`, main ="Sea Temperature: 40 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`50m`, main ="Sea Temperature: 50 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`60m`, main ="Sea Temperature: 60 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`70m`, main ="Sea Temperature: 70 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`80m`, main ="Sea Temperature: 80 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+plot(sea$date, sea$`90m`, main ="Sea Temperature: 90 Meters", xlab="Time", ylab="Temperature", ylim=c(15, 25), type = "l", lty=1)
+
+```
+
+Will introducing covariates improved forecasting?
+- sea surface temperature near gibraltar
+- aggregated monthly
+- January 2004 - November 2017
+- Covariates: 10 meter thick water layers at 10 - 90 meters
+
+we are looking at 10 different time series, each separated by 10 meters of water
+
+Regression
+- y is temperature (output)
+- x are the layers (input)
+
+### Bayesian Modelling
+```{r echo=FALSE}
+# this section fits one local linear, seasonal, and one linear component
+# ping sets a print statement while the function runs
+# expected model size sets our spike & slab to have one spike
+  # we are expected 1 depth to influence temperature underneath the former mentioned layer
+nseasons <- 11
+ss <- list()
+ss <- AddLocalLinearTrend(ss, y=sea$SST)
+ss <- AddSeasonal(ss, sea$SST, nseasons = nseasons)
+rlls_model = bsts(SST ~`10m`+`20m`+`30m`+`40m`+`50m`+`60m`+`70m`+`80m`+`90m`, state.specification = ss, data=train, niter=1000, ping=0, expected.model.size=1)
+
+
+```
+
+### Component Plotting & Coefficient Significance
+the 10-20 depth has a high inclusion probability 
+white bars are positive betas & black bars have negative betas
+```{r, echo=FALSE}
+plot(rlls_model, "components", xlab="time_index [ ]", ylab= "SST [deg C]")
+
+# plot coefficients for significance
+  # look at  
+plot(rlls_model, "coefficients")
+```
+
+### Forecasting Model 1
+With our prediction on the test set we notice wide confidence intervals. We suspect this is due to the stationary nature of BSTS.
+```{r, echo=FALSE}
+rlls_model_pred <- predict(rlls_model, newdata = test, horizon= 28)
+
+plot(rlls_model_pred, plot.original=90,
+     main="Seas. Local Lin. Trend Forecast With Regression", xlab="time_index [ ]", ylab= "SST [deg C]")
+
+
+```
+
+
+### MSPE Model 1
+```{r}
+errors = bsts.prediction.errors(rlls_model, cutpoints = 9, burn = SuggestBurn(.1, rlls_model), standardize = FALSE)
+
+
+PlotDynamicDistribution(errors$in.sample)
+
+summary(rlls_model, burn = SuggestBurn(.1, rlls_model))
+
+```
+
+
+### Model 2 Local Linear, Seasonal, TWO Linear Component Model
+This model checks the belief that there are two variables that affect sea surface temperature
+```{r}
+r2lls_model <- bsts(SST ~`10m`+`20m`+`30m`+`40m`+`50m`+`60m`+`70m`+`80m`+`90m`, state.specification = ss, data=train, niter=1000, ping=0, expected.model.size=2)
+
+#plot(r2lls_model, "coefficients")
+
+
+```
+
+### Forecasting (Model 2)
+```{r}
+r2lls_model_pred <- predict(r2lls_model, newdata = test, horizon= 28)
+
+plot(r2lls_model_pred, plot.original=90,
+     main="BSTS With Regression", xlab="time_index [ ]", ylab= "SST [deg C]")
+
+
+
+
+
+```
+
+### MSPE (Model 2)
+```{r}
+errors2 = bsts.prediction.errors(r2lls_model, cutpoints = NULL, burn = SuggestBurn(.1, rlls_model), standardize = FALSE)
+
+
+PlotDynamicDistribution(errors2$in.sample)
+
+summary2 <- summary(r2lls_model, burn = SuggestBurn(.1, rlls_model))
+
+```
+
+
+
+### Model 3
+Specifying inclusion probabilities
+```{r}
+bp <- c(0.6, 0.3, 0.3, 0.3, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+bp_model <- bsts(SST ~`10m`+`20m`+`30m`+`40m`+`50m`+`60m`+`70m`+`80m`+`90m`, state.specification = ss, data=train, niter=1000, ping=0, expected.model.size=2,
+                 prior.inclusion.probabilities=bp)
+
+```
+
+### Model Comparison (Model 1, 2, 3)
+```{r}
+CompareBstsModels(lwd = 2, model.list = list("Model 1"=rlls_model, "Model 2"=r2lls_model,
+                                             "Model 3"= bp_model), xlab = "time_index []")
+
+
+```
+
+Experimental code following class lecture example. 
+```{r}
+data(sea)
+y <- log(sea$SST)
+ss <- AddLocalLinearTrend(list(), y)
+ss <- AddSeasonal(ss, y, nseasons = 11)
+model <- bsts(y, state.specification = ss, niter = 1000)
+pred <- predict(model, mewdata= test ,horizon = 28, burn = 100)
+plot(pred, plot.original=90)
+
+```
